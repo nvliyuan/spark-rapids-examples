@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2025, NVIDIA CORPORATION.
+# Copyright (c) 2025-2026, NVIDIA CORPORATION.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ json_config=$(cat <<EOF
     "spark_version": "13.3.x-gpu-ml-scala2.12",
     "spark_conf": {
         "spark.task.resource.gpu.amount": "1",
-        "spark.executorEnv.PYTHONPATH": "/databricks/jars/rapids-4-spark_2.12-25.12.0.jar:/databricks/spark/python:/databricks/python3",
+        "spark.executorEnv.PYTHONPATH": "/databricks/jars/rapids-4-spark_2.12-26.02.0.jar:/databricks/spark/python:/databricks/python3",
         "spark.executor.cores": "8",
         "spark.rapids.memory.gpu.minAllocFraction": "0.0001",
         "spark.plugins": "com.nvidia.spark.SQLPlugin",
