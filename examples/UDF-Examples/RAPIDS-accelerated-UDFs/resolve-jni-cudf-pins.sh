@@ -31,14 +31,18 @@ if [ ! -f "$JAR_PATH" ]; then
     exit 1
 fi
 
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "ERROR: python3 is required to read jar metadata and validate cudf-pins" >&2
+    exit 1
+fi
+
 mkdir -p "$PINS_DIR"
 mkdir -p "$(dirname "$PROPERTIES_FILE")"
 
 read_property_from_jar() {
     local entry="$1"
     local property="$2"
-    if command -v python3 >/dev/null 2>&1; then
-        python3 - "$JAR_PATH" "$entry" "$property" <<'PY'
+    python3 - "$JAR_PATH" "$entry" "$property" <<'PY'
 import sys
 import zipfile
 
@@ -55,12 +59,6 @@ for line in data.splitlines():
         print(value)
         break
 PY
-    elif command -v unzip >/dev/null 2>&1; then
-        unzip -p "$JAR_PATH" "$entry" 2>/dev/null | awk -F= -v key="$property" '$1 == key {print $2; exit}'
-    else
-        echo "ERROR: python3 or unzip is required to read $entry from $JAR_PATH" >&2
-        exit 1
-    fi
 }
 
 normalize_github_raw_base() {

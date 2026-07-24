@@ -461,7 +461,20 @@
                                 <phase>compile</phase>
                                 <configuration>
                                     <target>
+                                        <available file="${project.build.directory}/jar-native-deps.properties"
+                                                   property="jar.native.deps.properties.exists"/>
+                                        <condition property="prebuilt.cudf.requested">
+                                            <equals arg1="${USE_PREBUILT_CUDF}" arg2="ON"/>
+                                        </condition>
+                                        <fail if:set="prebuilt.cudf.requested"
+                                              unless:set="jar.native.deps.properties.exists"
+                                              xmlns:if="ant:if"
+                                              xmlns:unless="ant:unless"
+                                              message="Prebuilt cuDF requires ${project.build.directory}/jar-native-deps.properties. Run dependency extraction first or set USE_PREBUILT_CUDF=OFF."/>
                                         <property file="${project.build.directory}/jar-native-deps.properties"/>
+                                        <property name="jar.rapids.cmake.sha" value="main"/>
+                                        <property name="jar.rapids.cmake.file" value=""/>
+                                        <property name="jar.cudf.pins.file" value=""/>
                                         <mkdir dir="${udf.native.build.path}"/>
                                         <exec dir="${udf.native.build.path}"
                                               failonerror="true"

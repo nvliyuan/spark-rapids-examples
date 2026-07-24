@@ -17,7 +17,7 @@
 # Keep the same with https://github.com/rapidsai/rapids-cmake/blob/main/RAPIDS.cmake
 cmake_minimum_required(VERSION 4.0 FATAL_ERROR)
 
-set(RAPIDS_CMAKE_BRANCH "release/26.02" CACHE STRING
+set(RAPIDS_CMAKE_BRANCH "main" CACHE STRING
     "rapids-cmake branch, tag, or commit to use for native dependencies")
 set(RAPIDS_CMAKE_FILE "" CACHE FILEPATH
     "Path to a pre-downloaded RAPIDS.cmake entrypoint")
@@ -278,7 +278,11 @@ if(SHOULD_USE_PREBUILT)
     # First, let rapids-cpm fetch the dependencies that cuDF needs
     message(STATUS "Fetching cuDF dependencies (this may take a few minutes)...")
     
-    rapids_cpm_init()
+    if(RAPIDS_CMAKE_CPM_OVERRIDE_VERSION_FILE)
+        rapids_cpm_init(OVERRIDE "${RAPIDS_CMAKE_CPM_OVERRIDE_VERSION_FILE}")
+    else()
+        rapids_cpm_init()
+    endif()
     
     # Set options to avoid building unnecessary components
     set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
