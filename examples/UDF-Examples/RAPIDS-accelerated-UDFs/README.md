@@ -145,7 +145,8 @@ mvn clean package -Pudf-native-examples
 ```
 
 The build will automatically:
-- Extract `libcudf.so` from the rapids-4-spark jar
+- Extract `libcudf.so` from older rapids-4-spark jars or reconstruct it from
+  the chunk-manifest representation used by newer jars
 - Read the embedded `spark-rapids-jni` and `cudf-java` version metadata from the jar
 - Download the matching `spark-rapids-jni` `cudf-pins` files
 - Clone the cuDF repository at the revision recorded in the jar

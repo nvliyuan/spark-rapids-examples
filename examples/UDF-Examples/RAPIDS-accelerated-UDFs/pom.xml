@@ -347,7 +347,6 @@
                                         <!-- Create necessary directories for extraction -->
                                         <mkdir dir="${project.build.directory}/native-deps"/>
                                         <mkdir dir="${project.build.directory}/cudf-repo"/>
-                                        <mkdir dir="${project.build.directory}/temp-extract"/>
 
                                         <!-- Create inverse property for jar NOT found -->
                                         <condition property="rapids.jar.not.found">
@@ -387,24 +386,13 @@
                                             <echo message="✓ Found jar at: ${rapids.jar.path}"/>
                                             <echo message="✓ Extracting libraries..."/>
 
-                                            <!-- Extract libcudf.so from rapids-4-spark jar -->
-                                            <unzip src="${rapids.jar.path}" 
-                                                   dest="${project.build.directory}/temp-extract">
-                                                <patternset>
-                                                    <include name="**/libcudf.so*"/>
-                                                    <include name="**/libnvcomp.so*"/>
-                                                </patternset>
-                                            </unzip>
-
-                                            <!-- Move extracted libraries to native-deps (flatten structure) -->
-                                            <copy todir="${project.build.directory}/native-deps" flatten="true">
-                                                <fileset dir="${project.build.directory}/temp-extract">
-                                                    <include name="**/*.so*"/>
-                                                </fileset>
-                                            </copy>
-
-                                            <!-- Clean up temp directory -->
-                                            <delete dir="${project.build.directory}/temp-extract"/>
+                                            <!-- Extract conventional native library entries or reconstruct
+                                                 libraries stored using the chunk-manifest format. -->
+                                            <exec executable="python3" failonerror="true">
+                                                <arg value="${basedir}/extract-native-libs.py"/>
+                                                <arg value="${rapids.jar.path}"/>
+                                                <arg value="${project.build.directory}/native-deps"/>
+                                            </exec>
 
                                             <!-- Verify extraction -->
                                             <available file="${project.build.directory}/native-deps/libcudf.so" 
