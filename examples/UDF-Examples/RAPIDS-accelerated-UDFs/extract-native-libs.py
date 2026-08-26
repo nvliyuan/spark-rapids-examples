@@ -25,7 +25,6 @@ entries such as amd64/Linux/libcudf.so.
 import argparse
 import binascii
 import os
-import re
 import shutil
 import tempfile
 import zipfile
@@ -34,7 +33,7 @@ import zipfile
 COPY_BUFFER_SIZE = 1024 * 1024
 MANIFEST_SUFFIX = ".chunks.properties"
 CHUNK_DIRECTORY_SUFFIX = ".chunks"
-NATIVE_LIBRARY_RE = re.compile(r"^(?:libcudf|libnvcomp)\.so(?:\..*)?$")
+CUDF_LIBRARY_NAME = "libcudf.so"
 
 
 def parse_properties(data, manifest_name):
@@ -191,9 +190,9 @@ def find_native_entries(archive):
         basename = os.path.basename(entry.filename)
         if basename.endswith(MANIFEST_SUFFIX):
             library_name = basename[: -len(MANIFEST_SUFFIX)]
-            if NATIVE_LIBRARY_RE.fullmatch(library_name):
+            if library_name == CUDF_LIBRARY_NAME:
                 chunked.setdefault(library_name, []).append(entry.filename)
-        elif NATIVE_LIBRARY_RE.fullmatch(basename):
+        elif basename == CUDF_LIBRARY_NAME:
             conventional.setdefault(basename, []).append(entry.filename)
 
     duplicates = {
@@ -220,7 +219,7 @@ def extract_native_libraries(jar_path, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     with zipfile.ZipFile(jar_path) as archive:
         conventional, chunked = find_native_entries(archive)
-        if "libcudf.so" not in conventional and "libcudf.so" not in chunked:
+        if CUDF_LIBRARY_NAME not in conventional and CUDF_LIBRARY_NAME not in chunked:
             raise RuntimeError(
                 "libcudf.so was not found as a conventional library or chunk manifest "
                 f"in {jar_path}"

@@ -34,12 +34,10 @@ class ExtractNativeLibrariesTest(unittest.TestCase):
     def tearDown(self):
         self.temporary_directory.cleanup()
 
-    def write_conventional_jar(self, cudf_data, nvcomp_data=None):
+    def write_conventional_jar(self, cudf_data):
         jar_path = self.root / "conventional.jar"
         with zipfile.ZipFile(jar_path, "w") as archive:
             archive.writestr("amd64/Linux/libcudf.so", cudf_data)
-            if nvcomp_data is not None:
-                archive.writestr("amd64/Linux/libnvcomp.so.1", nvcomp_data)
         return jar_path
 
     def write_chunked_jar(
@@ -81,16 +79,14 @@ class ExtractNativeLibrariesTest(unittest.TestCase):
                 )
         return jar_path
 
-    def test_extracts_conventional_libraries(self):
+    def test_extracts_conventional_library(self):
         cudf_data = b"conventional libcudf"
-        nvcomp_data = b"conventional libnvcomp"
-        jar_path = self.write_conventional_jar(cudf_data, nvcomp_data)
+        jar_path = self.write_conventional_jar(cudf_data)
         output_dir = self.root / "output"
 
         EXTRACTOR.extract_native_libraries(jar_path, output_dir)
 
         self.assertEqual(cudf_data, (output_dir / "libcudf.so").read_bytes())
-        self.assertEqual(nvcomp_data, (output_dir / "libnvcomp.so.1").read_bytes())
 
     def test_reconstructs_chunked_library(self):
         cudf_data = b"chunked libcudf data spanning several entries"
@@ -135,7 +131,7 @@ class ExtractNativeLibrariesTest(unittest.TestCase):
     def test_requires_libcudf_entry(self):
         jar_path = self.root / "missing.jar"
         with zipfile.ZipFile(jar_path, "w") as archive:
-            archive.writestr("amd64/Linux/libnvcomp.so", b"nvcomp")
+            archive.writestr("README", b"no native libraries")
 
         with self.assertRaisesRegex(RuntimeError, "libcudf.so was not found"):
             EXTRACTOR.extract_native_libraries(jar_path, self.root / "output")
